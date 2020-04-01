@@ -5,10 +5,16 @@ FROM osixia/ubuntu-light-baseimage:0.2.1
 ENV PYTHONUNBUFFERED=1
 
 RUN echo -e "**** install Python ****"
-RUN apt update -qq                                                               \
-    && apt install --yes -qq python3 python3-dev python3-virtualenv python3-pip  \
-    && ln -sf python3 /usr/bin/python                                            \
-    && pip3 install --no-cache -U pip setuptools wheel                           \
+RUN apt update -qq                              \
+    && apt install --yes -qq python3            \
+                             python3-dev        \
+                             python3-virtualenv \
+                             python3-venv       \
+                             python3-pip        \
+    && ln -sf python3 /usr/bin/python           \
+    && pip3 install --no-cache -U pip           \
+                                  setuptools    \
+                                  wheel         \
     && ln -sf pip3 /usr/bin/pip
 
 RUN echo -e "\n\n============ install dev-tools ============"
@@ -21,9 +27,7 @@ RUN add-apt-repository ppa:neovim-ppa/stable                          \
            tmux                                                       \
            wget                                                       \
            zsh                                                        \
-           git-extras                                                 \
-    && git clone https://github.com/ohmyzsh/ohmyzsh.git ~/.oh-my-zsh  \
-    && cp ~/.oh-my-zsh/templates/zshrc.zsh-template ~/.zshrc
+           git-extras
 
 RUN echo -e "\n\n============ install pyenv ============"       \
     && git clone https://github.com/pyenv/pyenv.git ~/.pyenv    \
@@ -51,10 +55,17 @@ RUN apt update -qq                                   \
         xz-utils                                     \
         zlib1g-dev
 
-# RUN git clone https://github.com/mmngreco/dotfiles -b ubuntu ~/dotfiles --recurse-submodules
+RUN git clone https://github.com/mmngreco/dotfiles -b ubuntu /root/dotfiles --recurse-submodules
+WORKDIR /root/dotfiles
+RUN ./install
+
+# Install vim plugings
+RUN vim +PlugInstall +qall > /dev/null
 
 RUN echo -e "\n\n============ create git directory ============"
 RUN mkdir -p /root/git
 WORKDIR /root/git
 
-CMD /bin/zsh
+RUN chsh -s $(which zsh)
+RUN /bin/zsh -c "echo Hola"
+CMD ["/bin/zsh"]
